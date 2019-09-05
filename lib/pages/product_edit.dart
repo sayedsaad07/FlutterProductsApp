@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
-class ProductCreatePage extends StatefulWidget {
+class ProductEditPage extends StatefulWidget {
   final Function addProduct;
-  ProductCreatePage(this.addProduct);
+  final Function updateProduct;
+  final Map<String, dynamic> product;
+  final int productIndex;
+  ProductEditPage(
+      {this.addProduct, this.updateProduct, this.product, this.productIndex});
 
   @override
   State<StatefulWidget> createState() {
-    return _ProductCreatePageState();
+    return _ProductEditPageState();
   }
 }
 
-class _ProductCreatePageState extends State<ProductCreatePage> {
-  String titleValue;
-  String descriptionValue;
-  double priceValue;
-
+class _ProductEditPageState extends State<ProductEditPage> {
   final Map<String, dynamic> _product = {
     'title': null,
     'description': null,
@@ -28,7 +28,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550.0 ? 500.0 : deviceWidth * 0.95;
     final double paddingWidth = deviceWidth - targetWidth;
-    return Container(
+    Widget editProductWidget = Container(
         margin: EdgeInsets.all(10.0),
         child: Form(
             key: _formKey,
@@ -47,11 +47,22 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                     onPressed: () => _createProduct(),
                   )
                 ])));
+
+    if (widget.product == null) {
+      return editProductWidget;
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Edit Product "),
+      ),
+      body: editProductWidget,
+    );
   }
 
   Widget _buildTitleTextFormField() {
     return TextFormField(
       decoration: InputDecoration(labelText: 'Product Title'),
+      initialValue: widget.product == null ? '' : widget.product['title'],
       validator: (String value) {
         if (value.isEmpty) {
           {
@@ -70,6 +81,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
       keyboardType: TextInputType.multiline,
       decoration: InputDecoration(labelText: 'Product Description'),
       maxLines: 4,
+      initialValue: widget.product == null ? '' : widget.product['description'],
       validator: (String value) {
         if (value.isEmpty) {
           {
@@ -87,6 +99,8 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
     return TextFormField(
       keyboardType: TextInputType.number,
       decoration: InputDecoration(labelText: 'Product Price'),
+      initialValue:
+          widget.product == null ? '' : widget.product['price'].toString(),
       validator: (String value) {
         if (value.isEmpty &&
             !RegExp(r'^(?:[1-9]\d*|0)?(?:\.\d+)?$').hasMatch(value)) {
@@ -104,7 +118,13 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
       return;
     }
     _formKey.currentState.save();
-    widget.addProduct(_product);
+    if (widget.product == null) {
+      //Add new product
+      widget.addProduct(_product);
+    } else {
+      //update existing product
+      widget.updateProduct(widget.productIndex, _product);
+    }
     Navigator.pushNamed(context, "/");
   }
 
