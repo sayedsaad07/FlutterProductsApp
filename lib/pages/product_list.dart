@@ -6,7 +6,7 @@ class ProductListPage extends StatelessWidget {
   final Function deleteProduct;
   final Function updateProduct;
   final List<Map<String, dynamic>> _products;
-  ProductListPage(this._products, this. updateProduct, this.deleteProduct);
+  ProductListPage(this._products, this.updateProduct, this.deleteProduct);
 
   @override
   Widget build(BuildContext context) {
@@ -18,23 +18,36 @@ class ProductListPage extends StatelessWidget {
 
   Widget _buildProductItem(BuildContext context, int index) {
     // return ProductCard(_products[index], index);
-    return ListTile(
-      onTap: () {},
-      leading: Image.asset(_products[index]['image']),
+    var listTileWidget = ListTile(
+      leading:
+          CircleAvatar(backgroundImage: AssetImage(_products[index]['image'])),
       title: Text(_products[index]['title']),
+      subtitle: Text('\$${_products[index]['price'].toString()}'),
       trailing: IconButton(
         icon: Icon(Icons.edit),
         onPressed: () {
-          _editProduct(context, _products[index], index );
+          _editProduct(context, _products[index], index);
         },
       ),
     );
+    return Dismissible(
+        key: Key(_products[index]['title']),
+        background: Container(color: Colors.red,),
+        onDismissed: (DismissDirection direction){
+          if(direction == DismissDirection.endToStart){
+            this.deleteProduct(index);
+          }
+        },
+        child: Column(
+          children: <Widget>[listTileWidget, Divider()],
+        ));
   }
 
   void _editProduct(context, Map<String, dynamic> product, index) {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (BuildContext context) {
-      return ProductEditPage(updateProduct: updateProduct, product: product, productIndex: index );
+      return ProductEditPage(
+          updateProduct: updateProduct, product: product, productIndex: index);
     }));
   }
 }
