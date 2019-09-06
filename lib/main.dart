@@ -31,18 +31,21 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
+  //add new product
   void _addProduct(Map<String, dynamic> product) {
     setState(() {
       _products.add(product);
     });
   }
 
+  //update existing product
   void _updateProduct(int index, Map<String, dynamic> product) {
     setState(() {
       _products[index] = product;
     });
   }
 
+  //delete product
   void _deleteProduct(int index) {
     setState(() {
       _products.removeAt(index);
