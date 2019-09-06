@@ -1,19 +1,14 @@
-# starter_app
+Online sstore for homemade products using Flutter for Mobile.
+This app will compile for Android and IOS. 
+App features,
+1. Authentication
+2. Product list
+3. Add/edit/remove products 
+4. Product locations on a map
+5. upload real product images
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+I have so many challenges with PWA(Progresive web App) on IOS  safari browser. Also getting access to Mobile camera is a big challenge for users to handle on PWA. 
+Finally found this awesome Flutter framework that is helping me build app for any mobile users.
 
 
 git init
