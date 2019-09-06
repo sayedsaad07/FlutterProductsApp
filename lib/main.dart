@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  //update existing product
+  //update existing product 
   void _updateProduct(int index, Map<String, dynamic> product) {
     setState(() {
       _products[index] = product;
