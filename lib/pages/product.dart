@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:starter_app/models/product.dart';
 import 'dart:async';
 
 import 'package:starter_app/widgets/products/price_tag.dart';
 import 'package:starter_app/widgets/ui_elements/title_default.dart';
 
 class ProductPage extends StatelessWidget {
-  final Map<String, dynamic> _product;
+  final Product _product;
   ProductPage(this._product);
 
   @override
@@ -29,17 +30,17 @@ class ProductPage extends StatelessWidget {
       // mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Image.asset(_product['image']),
+        Image.asset(_product.image),
         Container(
             padding: EdgeInsets.all(10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                TitleDefault(_product['title']),
+                TitleDefault(_product.title),
                 SizedBox(
                   width: 8.0,
                 ),
-                PriceTag(_product['price'])
+                PriceTag(_product.price)
               ],
             )),
         Container(
@@ -48,7 +49,7 @@ class ProductPage extends StatelessWidget {
               border: Border.all(color: Colors.grey, width: 1.0),
               borderRadius: BorderRadius.circular(4.0)),
           child: Text(
-            _product['description'],
+            _product.description,
             style: TextStyle(fontSize: 14, fontFamily: 'Roboto'),
           ),
         ),

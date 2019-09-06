@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:starter_app/pages/auth.dart';
+import 'models/product.dart';
 import 'pages/product.dart';
 import 'pages/products.dart';
 import 'pages/products_admin.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Map<String, dynamic>> _products = [];
+  List<Product> _products = [];
   bool isFirstLoad;
   @override
   void initState() {
@@ -32,14 +33,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   //add new product
-  void _addProduct(Map<String, dynamic> product) {
+  void _addProduct(Product product) {
     setState(() {
       _products.add(product);
     });
   }
 
   //update existing product 
-  void _updateProduct(int index, Map<String, dynamic> product) {
+  void _updateProduct(int index, Product product) {
     setState(() {
       _products[index] = product;
     });
