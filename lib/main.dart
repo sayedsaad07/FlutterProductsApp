@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  //update existing product 
+  //update existing product
   void _updateProduct(int index, Product product) {
     setState(() {
       _products[index] = product;
@@ -56,39 +56,49 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-          accentColor: Colors.deepPurple,
-          primarySwatch: Colors.indigo,
-          brightness: Brightness.light,
-          buttonColor: Colors.deepPurple),
-      // home: AuthPage(), //because we have a default route "/"
-      routes: {
-        "/": (BuildContext context) {
-          if (isFirstLoad == true) {
-            isFirstLoad = false;
-            return AuthPage();
-          }
-          return ProductsPage(_products);
+        theme: ThemeData(
+            accentColor: Colors.deepPurple,
+            primarySwatch: Colors.indigo,
+            brightness: Brightness.light,
+            buttonColor: Colors.deepPurple),
+        // home: AuthPage(), //because we have a default route "/"
+        initialRoute: '/auth',
+        routes: {
+          "/": (BuildContext context) {
+            if (isFirstLoad == true) {
+              isFirstLoad = false;
+              return AuthPage();
+            }
+            return ProductsPage(_products);
+          },
+          "/auth": (BuildContext context) => AuthPage(),
+          "/admin": (BuildContext context) => ProductsAdminPage(
+              _products, _addProduct, _updateProduct, _deleteProduct)
         },
-        "/auth": (BuildContext context) => AuthPage(),
-        "/admin": (BuildContext context) => ProductsAdminPage(
-            _products, _addProduct, _updateProduct, _deleteProduct)
-      },
-      onGenerateRoute: (RouteSettings settings) {
-        final List<String> pathElements = settings.name.split('/');
-        if (pathElements[0] != '') return null;
-        if (pathElements[1] == 'product') {
-          final int productIndex = int.parse(pathElements[2]);
-          return MaterialPageRoute<bool>(
-              builder: (BuildContext context) =>
-                  ProductPage(_products[productIndex]));
-        }
-        return null;
-      },
-      onUnknownRoute: (RouteSettings settings) {
-        return MaterialPageRoute(
-            builder: (BuildContext context) => ProductsPage(_products));
-      },
-    );
+        onGenerateRoute: (RouteSettings settings) {
+          switch (settings.name) {
+            case '/':
+              return MaterialPageRoute(builder: (_) => ProductsPage(_products));
+            case '/auth':
+              return MaterialPageRoute(builder: (_) => AuthPage());
+            case '/admin':
+              return MaterialPageRoute(
+                  builder: (_) => ProductsAdminPage(
+                      _products, _addProduct, _updateProduct, _deleteProduct));
+            case '/product':
+              final List<String> pathElements = settings.name.split('/');
+              if (pathElements[0] != '') return null;
+              if (pathElements[1] == 'product') {
+                final int productIndex = int.parse(pathElements[2]);
+                return MaterialPageRoute<bool>(
+                    builder: (BuildContext context) =>
+                        ProductPage(_products[productIndex]));
+              }
+              return null;
+            default:
+              return MaterialPageRoute(
+                  builder: (BuildContext context) => ProductsPage(_products));
+          }
+        });
   }
 }
