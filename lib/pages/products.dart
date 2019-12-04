@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:starter_app/models/product.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:starter_app/core/viewmodels/products.dart';
 import 'package:starter_app/widgets/products/products.dart';
 
 class ProductsPage extends StatelessWidget {
-  final List<Product> products;
-
-  ProductsPage(this.products);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,17 +33,22 @@ class ProductsPage extends StatelessWidget {
         ),
         appBar: AppBar(
           title: Text('Easy Start'),
-          actions: <Widget>[
-              IconButton(
-                icon: Icon(
-                  Icons.favorite,
-                  
-                ),
-                color: Colors.red,
-                onPressed: () {},
-              )
-          ],
+          actions: <Widget>[_favoriteActionButton()],
         ),
-        body: Products(this.products));
+        body: Products());
+  }
+
+  _favoriteActionButton() {
+    return ScopedModelDescendant<ProductsModel>(
+      builder: (context, child, ProductsModel model) {
+        return IconButton(
+          icon: Icon(
+            model.displayFavoriteOnly? Icons.favorite : Icons.favorite_border,
+          ),
+          color: Colors.red,
+          onPressed: () { model.toggleDisplayFavoriteMode();},
+        );
+      },
+    );
   }
 }

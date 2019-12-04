@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:starter_app/models/product.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:starter_app/core/models/product.dart';
+import 'package:starter_app/core/viewmodels/products.dart';
 import 'package:starter_app/widgets/products/price_tag.dart';
 import 'package:starter_app/widgets/ui_elements/title_default.dart';
 
@@ -39,18 +41,26 @@ class ProductCard extends StatelessWidget {
                 color: Theme.of(context).primaryColor,
                 onPressed: () => _showProductDetails(context, index),
               ),
-              IconButton(
-                icon: Icon(
-                  Icons.favorite,
-                  size: 50.0,
-                ),
-                color: Colors.red,
-                onPressed: () => _showProductDetails(context, index),
-              )
+              _favoriteButton()
             ],
           )
         ],
       ),
+    );
+  }
+
+  Widget _favoriteButton() {
+    return ScopedModelDescendant<ProductsModel>(
+      builder: (context, child, ProductsModel model) {
+        return IconButton(
+          icon: Icon(
+            model.displayProducts()[index].isFavorite? Icons.favorite : Icons.favorite_border,
+            size: 50.0,
+          ),
+          color: Colors.red,
+          onPressed: () => model.toggleProductFavorite(index),
+        );
+      },
     );
   }
 

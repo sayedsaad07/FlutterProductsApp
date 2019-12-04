@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:starter_app/models/product.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:starter_app/core/models/product.dart';
+import 'package:starter_app/core/viewmodels/products.dart';
 import 'dart:async';
 
 import 'package:starter_app/widgets/products/price_tag.dart';
 import 'package:starter_app/widgets/ui_elements/title_default.dart';
 
 class ProductPage extends StatelessWidget {
-  final Product _product;
-  ProductPage(this._product);
+  final int _productIndex;
+  ProductPage(this._productIndex);
 
   @override
   Widget build(BuildContext context) {
@@ -20,27 +22,31 @@ class ProductPage extends StatelessWidget {
           appBar: AppBar(
             title: Text('Easy Start APP '),
           ),
-          body: _showProductDetails(context)),
+          body: ScopedModelDescendant<ProductsModel>(
+            builder: (context, Widget child, ProductsModel model) =>
+              _showProductDetails(context , model.products[_productIndex])
+            
+          )),
     );
   }
 
   //private methods
-  Widget _showProductDetails(BuildContext context) {
+  Widget _showProductDetails(BuildContext context, Product product ) {
     return Column(
       // mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Image.asset(_product.image),
+        Image.asset(product.image),
         Container(
             padding: EdgeInsets.all(10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                TitleDefault(_product.title),
+                TitleDefault(product.title),
                 SizedBox(
                   width: 8.0,
                 ),
-                PriceTag(_product.price)
+                PriceTag(product.price)
               ],
             )),
         Container(
@@ -49,7 +55,7 @@ class ProductPage extends StatelessWidget {
               border: Border.all(color: Colors.grey, width: 1.0),
               borderRadius: BorderRadius.circular(4.0)),
           child: Text(
-            _product.description,
+            product.description,
             style: TextStyle(fontSize: 14, fontFamily: 'Roboto'),
           ),
         ),

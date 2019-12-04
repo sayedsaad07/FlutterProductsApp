@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:starter_app/models/product.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:starter_app/core/models/product.dart';
+import 'package:starter_app/core/viewmodels/products.dart';
 
 class ProductEditPage extends StatefulWidget {
-  final Function addProduct;
-  final Function updateProduct;
   final Product product;
-  final int productIndex;
-  ProductEditPage(
-      {this.addProduct, this.updateProduct, this.product, this.productIndex});
+  ProductEditPage({this.product});
 
   @override
   State<StatefulWidget> createState() {
@@ -39,14 +37,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   _buildTitleTextFormField(),
                   _buildDescriptionTextFormField(),
                   _buildPriceTextFormField(),
-                  IconButton(
-                    // child: Text("Submit"),
-                    icon: Icon(
-                      Icons.add,
-                      size: 60.0,
-                    ),
-                    onPressed: () => _createProduct(),
-                  )
+                  _buildSubmitButton()
                 ])));
 
     if (widget.product == null) {
@@ -114,27 +105,47 @@ class _ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  void _createProduct() {
+  void _submitProduct(Function addProduct, Function updateProduct) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
-    Product updatedProduct = Product(title: _formProduct['title'], description: _formProduct['description'] , price: _formProduct['price'] , image: _formProduct['image']);
     if (widget.product == null) {
       //Add new product
-      widget.addProduct( updatedProduct);
+      addProduct(Product(
+          title: _formProduct['title'],
+          description: _formProduct['description'],
+          price: _formProduct['price'],
+          image: _formProduct['image']));
     } else {
       //update existing product
-      widget.updateProduct(widget.productIndex, updatedProduct);
+      updateProduct(Product(
+        title: _formProduct['title'],
+        description: _formProduct['description'],
+        price: _formProduct['price'],
+        image: _formProduct['image']));
     }
     Navigator.pushNamed(context, "/");
   }
 
-  void _showModal(BuildContext context) {
-    showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return Center(child: Text("Save Product"));
-        });
+  // void _showModal(BuildContext context) {
+  //   showModalBottomSheet(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return Center(child: Text("Save Product"));
+  //       });
+  // }
+
+  Widget _buildSubmitButton() {
+    return ScopedModelDescendant<ProductsModel>(
+      builder: (BuildContext context, Widget child, ProductsModel model) {
+        return RaisedButton(
+          child: Text("Save"),
+          color: Colors.white,
+          onPressed: () =>
+              _submitProduct(model.addProduct, model.updateProduct),
+        );
+      },
+    );
   }
 }

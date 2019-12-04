@@ -1,44 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:starter_app/models/product.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:starter_app/core/models/product.dart';
+import 'package:starter_app/core/viewmodels/products.dart';
 import 'package:starter_app/pages/product_edit.dart';
 import 'package:starter_app/widgets/products/product_card.dart';
 
 class ProductListPage extends StatelessWidget {
-  final Function deleteProduct;
-  final Function updateProduct;
-  final List<Product> _products;
-  ProductListPage(this._products, this.updateProduct, this.deleteProduct);
-
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: _buildProductItem,
-      itemCount: _products.length,
+    return ScopedModelDescendant<ProductsModel>(
+      builder: (context, child, ProductsModel model) {
+        return ListView.builder(
+          itemBuilder: (BuildContext context, int index) =>
+              _buildProductItem(context, index, model),
+          itemCount: model.products.length,
+        );
+      },
     );
   }
 
-  Widget _buildProductItem(BuildContext context, int index) {
-    // return ProductCard(_products[index], index);
+  Widget _buildProductItem(
+      BuildContext context, int index, ProductsModel model) {
+    // return ProductCard(model.products[index], index);
     var listTileWidget = ListTile(
-      leading:
-          CircleAvatar(backgroundImage: AssetImage(_products[index].image)),
-      title: Text(_products[index].title),
-      subtitle: Text('\$${_products[index].price.toString()}'),
+      leading: CircleAvatar(
+          backgroundImage: AssetImage(model.products[index].image)),
+      title: Text(model.products[index].title),
+      subtitle: Text('\$${model.products[index].price.toString()}'),
       trailing: IconButton(
         icon: Icon(Icons.edit),
         onPressed: () {
-          _editProduct(context, _products[index], index);
+          model.selectProduct(index);
+          _editProduct(context, model.products[index], index);
         },
       ),
     );
     return Dismissible(
-        key: Key(_products[index].title),
+        key: Key(model.products[index].title),
         background: Container(
           color: Colors.red,
         ),
         onDismissed: (DismissDirection direction) {
           if (direction == DismissDirection.endToStart) {
-            this.deleteProduct(index);
+            model.selectProduct(index);
+            model.deleteProduct();
           }
         },
         child: Column(
@@ -49,8 +54,7 @@ class ProductListPage extends StatelessWidget {
   void _editProduct(context, Product product, index) {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (BuildContext context) {
-      return ProductEditPage(
-          updateProduct: updateProduct, product: product, productIndex: index);
+      return ProductEditPage(product: product,);
     }));
   }
 }

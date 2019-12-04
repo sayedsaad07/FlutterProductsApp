@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter/widgets.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:starter_app/core/viewmodels/products.dart';
+import 'package:starter_app/core/viewmodels/user.dart';
 import 'package:starter_app/pages/auth.dart';
-import 'models/product.dart';
 import 'pages/product.dart';
 import 'pages/products.dart';
 import 'pages/products_admin.dart';
@@ -24,38 +26,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Product> _products = [];
-  bool isFirstLoad;
-  @override
-  void initState() {
-    isFirstLoad = true;
-    super.initState();
-  }
-
-  //add new product
-  void _addProduct(Product product) {
-    setState(() {
-      _products.add(product);
-    });
-  }
-
-  //update existing product
-  void _updateProduct(int index, Product product) {
-    setState(() {
-      _products[index] = product;
-    });
-  }
-
-  //delete product
-  void _deleteProduct(int index) {
-    setState(() {
-      _products.removeAt(index);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    var materialApp = MaterialApp(
         theme: ThemeData(
             accentColor: Colors.deepPurple,
             primarySwatch: Colors.indigo,
@@ -63,42 +36,31 @@ class _MyAppState extends State<MyApp> {
             buttonColor: Colors.deepPurple),
         // home: AuthPage(), //because we have a default route "/"
         initialRoute: '/auth',
-        routes: {
-          "/": (BuildContext context) {
-            if (isFirstLoad == true) {
-              isFirstLoad = false;
-              return AuthPage();
-            }
-            return ProductsPage(_products);
-          },
-          "/auth": (BuildContext context) => AuthPage(),
-          "/admin": (BuildContext context) => ProductsAdminPage(
-              _products, _addProduct, _updateProduct, _deleteProduct)
-        },
         onGenerateRoute: (RouteSettings settings) {
           switch (settings.name) {
             case '/':
-              return MaterialPageRoute(builder: (_) => ProductsPage(_products));
+              return MaterialPageRoute(builder: (_) => ProductsPage());
             case '/auth':
               return MaterialPageRoute(builder: (_) => AuthPage());
             case '/admin':
-              return MaterialPageRoute(
-                  builder: (_) => ProductsAdminPage(
-                      _products, _addProduct, _updateProduct, _deleteProduct));
+              return MaterialPageRoute(builder: (_) => ProductsAdminPage());
             case '/product':
+            default:
+              print('route name is $settings.name');
               final List<String> pathElements = settings.name.split('/');
-              if (pathElements[0] != '') return null;
-              if (pathElements[1] == 'product') {
+              // if (pathElements[0] != '') return null;
+              if (pathElements[0] == '' && pathElements[1] == 'product') {
                 final int productIndex = int.parse(pathElements[2]);
                 return MaterialPageRoute<bool>(
                     builder: (BuildContext context) =>
-                        ProductPage(_products[productIndex]));
+                        ProductPage(productIndex));
               }
-              return null;
-            default:
               return MaterialPageRoute(
-                  builder: (BuildContext context) => ProductsPage(_products));
+                  builder: (BuildContext context) => ProductsPage());
           }
         });
+    return ScopedModel<ProductsModel>(
+        model: ProductsModel(),
+        child: ScopedModel<UserModel>(model: UserModel(), child: materialApp));
   }
 }
