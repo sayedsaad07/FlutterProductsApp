@@ -30,6 +30,16 @@ class ProductsModel extends Model {
     return List.from(_products);
   }
 
+  // void addProduct(
+  //     String title, String description, String image, double price) {
+  //   _products.add(Product(
+  //       title: _products[_selectedProductIndex].title,
+  //       description: _products[_selectedProductIndex].description,
+  //       price: _products[_selectedProductIndex].price,
+  //       image: _products[_selectedProductIndex].image,
+  //       isFavorite: false));
+  //   _selectedProductIndex = null;
+  // }
   //add new product
   void addProduct(Product product) {
     _products.add(product);
