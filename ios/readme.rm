@@ -1,0 +1,13 @@
+cd ~/desktop/flutter/development
+ export PATH="$PATH:`pwd`/flutter/bin"
+
+Configure Java
+cd ~/
+touch .bash_profile
+open -e .bash_profile
+export JAVA_HOME=$(usr/libexec/java_home)
+
+
+echo $JAVA_Home
+/Library/Java/JavaVirtualMachines/jdk-13.0.1.jdk/Contents/Home
+
