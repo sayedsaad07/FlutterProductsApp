@@ -18,7 +18,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     'title': null,
     'description': null,
     'price': 0.00,
-    'image': 'assets/images/saad_india.jpg'
+    'image': 'assets/images/dream_home_office.jpeg'
   };
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
