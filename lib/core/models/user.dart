@@ -6,4 +6,4 @@ class User {
   final String password;
 
   User({@required this.id , @required this.email , @required this.password});
-}
+} 
