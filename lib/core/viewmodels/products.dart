@@ -1,17 +1,63 @@
 import 'package:scoped_model/scoped_model.dart';
 import 'package:starter_app/core/models/product.dart';
+import 'package:starter_app/core/models/user.dart';
 
-class ProductsModel extends Model {
+class UserModel extends Model {
+  User _authenticatedUser;
+  bool _isLoggedin = false;
+
+  bool get isLoggedin {
+    return _authenticatedUser != null;
+  }
+
+  void login(String email, String password) {
+    _authenticatedUser =
+        User(email: email, password: password, id: "thisissayedid");
+  }
+}
+
+class ProductsModel extends UserModel {
+  bool _displayFavoriteOnly = false;
   List<Product> _products = [];
   int _selectedProductIndex;
-  bool _displayFavoriteOnly = false;
 
-  List<Product> get products {
+  List<Product> get allProducts {
     return List.from(_products);
   }
 
-  int get selectedProductIndex {
+  int get currentProductIndex {
     return _selectedProductIndex;
+  }
+
+  //add new product
+  void addProduct(
+      String title, String description, String image, double price) {
+    final Product newProduct = new Product(
+        title: title,
+        description: description,
+        price: price,
+        image: image,
+        username: _authenticatedUser.email,
+        userid: _authenticatedUser.id,
+        isFavorite: false);
+    _products.add(newProduct);
+    _selectedProductIndex = null;
+    notifyListeners();
+  }
+
+  //update existing product
+  void updateProduct(
+      String title, String description, String image, double price) {
+    final Product newProduct = new Product(
+        title: title,
+        description: description,
+        price: price,
+        image: image,
+        username: _products[_selectedProductIndex].username,
+        userid: _products[_selectedProductIndex].userid,
+        isFavorite: false);
+    _products[_selectedProductIndex] = newProduct;
+    _selectedProductIndex = null;
   }
 
   bool get isFavoriteSelectedProduct {
@@ -28,28 +74,6 @@ class ProductsModel extends Model {
       return _products.where((Product product) => product.isFavorite).toList();
     }
     return List.from(_products);
-  }
-
-  // void addProduct(
-  //     String title, String description, String image, double price) {
-  //   _products.add(Product(
-  //       title: _products[_selectedProductIndex].title,
-  //       description: _products[_selectedProductIndex].description,
-  //       price: _products[_selectedProductIndex].price,
-  //       image: _products[_selectedProductIndex].image,
-  //       isFavorite: false));
-  //   _selectedProductIndex = null;
-  // }
-  //add new product
-  void addProduct(Product product) {
-    _products.add(product);
-    _selectedProductIndex = null;
-  }
-
-  //update existing product
-  void updateProduct(Product product) {
-    _products[_selectedProductIndex] = product;
-    _selectedProductIndex = null;
   }
 
   //delete product
@@ -70,13 +94,15 @@ class ProductsModel extends Model {
       final bool isCurrentFavorite =
           _products[_selectedProductIndex].isFavorite;
       bool newFavoriteStatus = !isCurrentFavorite;
-      this.updateProduct(Product(
+      final Product newProduct = Product(
           title: _products[_selectedProductIndex].title,
           description: _products[_selectedProductIndex].description,
           price: _products[_selectedProductIndex].price,
           image: _products[_selectedProductIndex].image,
-          isFavorite: newFavoriteStatus));
-
+          username: _products[_selectedProductIndex].username,
+          userid: _products[_selectedProductIndex].userid,
+          isFavorite: newFavoriteStatus);
+      _products[_selectedProductIndex] = newProduct;
       _selectedProductIndex = null;
       this.notifyListeners();
     }

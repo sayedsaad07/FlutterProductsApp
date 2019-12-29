@@ -105,27 +105,28 @@ class _ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  void _submitProduct(Function addProduct, Function updateProduct) {
+  void _submitProduct(Function addProduct, Function updateProduct , Function selectProduct) {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
     if (widget.product == null) {
       //Add new product
-      addProduct(Product(
-          title: _formProduct['title'],
-          description: _formProduct['description'],
-          price: _formProduct['price'],
-          image: _formProduct['image']));
+      addProduct(
+           _formProduct['title'],
+           _formProduct['description'],
+           _formProduct['image'],
+           _formProduct['price']
+           );
     } else {
       //update existing product
-      updateProduct(Product(
-        title: _formProduct['title'],
-        description: _formProduct['description'],
-        price: _formProduct['price'],
-        image: _formProduct['image']));
+      updateProduct(
+         _formProduct['title'],
+         _formProduct['description'],
+         _formProduct['image'],
+         _formProduct['price']);
     }
-    Navigator.pushNamed(context, "/");
+    Navigator.pushNamed(context, "/").then((_) => selectProduct(null));
   }
 
   // void _showModal(BuildContext context) {
@@ -143,7 +144,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           child: Text("Save"),
           color: Colors.white,
           onPressed: () =>
-              _submitProduct(model.addProduct, model.updateProduct),
+              _submitProduct(model.addProduct, model.updateProduct, model.selectProduct)
         );
       },
     );

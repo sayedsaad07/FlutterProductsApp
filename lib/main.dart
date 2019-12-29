@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:starter_app/core/viewmodels/products.dart';
-import 'package:starter_app/core/viewmodels/user.dart';
 import 'package:starter_app/pages/auth.dart';
 import 'pages/product.dart';
 import 'pages/products.dart';
@@ -61,6 +60,8 @@ class _MyAppState extends State<MyApp> {
         });
     return ScopedModel<ProductsModel>(
         model: ProductsModel(),
-        child: ScopedModel<UserModel>(model: UserModel(), child: materialApp));
+        child: ScopedModel<UserModel>(
+            model: UserModel(), 
+            child: materialApp));
   }
 }

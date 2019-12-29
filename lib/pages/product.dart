@@ -24,7 +24,7 @@ class ProductPage extends StatelessWidget {
           ),
           body: ScopedModelDescendant<ProductsModel>(
             builder: (context, Widget child, ProductsModel model) =>
-              _showProductDetails(context , model.products[_productIndex])
+              _showProductDetails(context , model.allProducts[_productIndex])
             
           )),
     );

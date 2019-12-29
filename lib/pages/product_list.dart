@@ -13,7 +13,7 @@ class ProductListPage extends StatelessWidget {
         return ListView.builder(
           itemBuilder: (BuildContext context, int index) =>
               _buildProductItem(context, index, model),
-          itemCount: model.products.length,
+          itemCount: model.allProducts.length,
         );
       },
     );
@@ -24,19 +24,19 @@ class ProductListPage extends StatelessWidget {
     // return ProductCard(model.products[index], index);
     var listTileWidget = ListTile(
       leading: CircleAvatar(
-          backgroundImage: AssetImage(model.products[index].image)),
-      title: Text(model.products[index].title),
-      subtitle: Text('\$${model.products[index].price.toString()}'),
+          backgroundImage: AssetImage(model.allProducts[index].image)),
+      title: Text(model.allProducts[index].title),
+      subtitle: Text('\$${model.allProducts[index].price.toString()}'),
       trailing: IconButton(
         icon: Icon(Icons.edit),
         onPressed: () {
           model.selectProduct(index);
-          _editProduct(context, model.products[index], index);
+          _editProduct(context, model.allProducts[index], index);
         },
       ),
     );
     return Dismissible(
-        key: Key(model.products[index].title),
+        key: Key(model.allProducts[index].title),
         background: Container(
           color: Colors.red,
         ),
