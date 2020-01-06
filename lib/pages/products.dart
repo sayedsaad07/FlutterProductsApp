@@ -7,7 +7,7 @@ class ProductsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: Drawer(fv
+        drawer: Drawer(
           child: Column(
             children: <Widget>[
               AppBar(
@@ -35,7 +35,10 @@ class ProductsPage extends StatelessWidget {
           title: Text('Easy Start'),
           actions: <Widget>[_favoriteActionButton()],
         ),
-        body: Products());
+        body: ScopedModelDescendant<ProductsModel>(
+            builder: (BuildContext context, Widget child, ProductsModel model) {
+          return Products(model);
+        }));
   }
 
   _favoriteActionButton() {
@@ -43,10 +46,12 @@ class ProductsPage extends StatelessWidget {
       builder: (context, child, ProductsModel model) {
         return IconButton(
           icon: Icon(
-            model.displayFavoriteOnly? Icons.favorite : Icons.favorite_border,
+            model.displayFavoriteOnly ? Icons.favorite : Icons.favorite_border,
           ),
           color: Colors.red,
-          onPressed: () { model.toggleDisplayFavoriteMode();},
+          onPressed: () {
+            model.toggleDisplayFavoriteMode();
+          },
         );
       },
     );

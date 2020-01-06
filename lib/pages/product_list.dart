@@ -24,7 +24,7 @@ class ProductListPage extends StatelessWidget {
     // return ProductCard(model.products[index], index);
     var listTileWidget = ListTile(
       leading: CircleAvatar(
-          backgroundImage: AssetImage(model.allProducts[index].image)),
+          backgroundImage: NetworkImage(model.allProducts[index].image)),
       title: Text(model.allProducts[index].title),
       subtitle: Text('\$${model.allProducts[index].price.toString()}'),
       trailing: IconButton(
