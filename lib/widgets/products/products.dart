@@ -37,14 +37,11 @@ class ProductsState extends State<Products> {
 
     // return _buildProductList(widget.model.displayProducts());
     return RefreshIndicator(
-        onRefresh: () => _onHandRefresh(),
+        onRefresh: () => onHandRefresh(_asyncLoaderState),
         child: new Center(child: _asyncLoader));
   }
 
-  Future<void> _onHandRefresh() async {
-    await _asyncLoaderState.currentState.reloadState();
-    return;
-  }
+  
 
   //private methods
   Widget _buildProductList(List<Product> products) {

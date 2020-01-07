@@ -20,7 +20,7 @@ class UserModel extends Model {
 }
 
 class ProductsModel extends UserModel {
-  String _productsUrl = "https://connectutopia.firebaseio.com/products.json";
+  String _baseUrl = "https://connectutopia.firebaseio.com";
   var _networkhomeofficeImage =
       "https://tr1.cbsistatic.com/hub/i/2017/11/22/42deea0f-4f4b-44c6-a2dc-c855499ea92e/unlikely4.jpg";
   bool _displayFavoriteOnly = false;
@@ -36,9 +36,13 @@ class ProductsModel extends UserModel {
   }
 
   Future<List<Product>> fetchProducts() async {
-    var response = await http.get('$_productsUrl');
+    var response = await http.get('$_baseUrl/products.json');
     Map<String, dynamic> productsListData = json.decode(response.body);
     this._products.clear();
+    
+    //exit if response body is empty
+    if (productsListData == null) return this._products;
+
     productsListData.forEach((String productId, dynamic productData) {
       Product newProduct = new Product(
           id: productId,
@@ -46,7 +50,7 @@ class ProductsModel extends UserModel {
           description: productData['description'],
           image: productData['image'],
           price: productData['price'],
-          userid:productData['userid'],
+          userid: productData['userid'],
           username: productData['username']);
       this._products.add(newProduct);
     });
@@ -67,7 +71,7 @@ class ProductsModel extends UserModel {
       'userid': _authenticatedUser.id,
     };
     var response =
-        await http.post('$_productsUrl', body: json.encode(productData));
+        await http.post('$_baseUrl/products.json', body: json.encode(productData));
     // if(response.statusCode != HttpStatus.notFound){}
     Map<String, dynamic> data = json.decode(response.body);
     final Product newProduct = new Product(
@@ -85,9 +89,19 @@ class ProductsModel extends UserModel {
   }
 
   //update existing product
-  void updateProduct(
-      String title, String description, String image, double price) {
+  Future<void> updateProduct(String title, String description, String image, double price) async{
     image = _networkhomeofficeImage;
+    Map<String, dynamic> productData = {
+      'title': title,
+      'description': description,
+      'price': price,
+      'image': image,
+      'username': _products[_selectedProductIndex].username,
+      'userid': _products[_selectedProductIndex].userid,
+    };
+    var _productId = _products[_selectedProductIndex].id;
+    
+    await http.put('$_baseUrl/products/$_productId.json', body: json.encode(productData));
     final Product newProduct = new Product(
         id: _products[_selectedProductIndex].id,
         title: title,
@@ -99,6 +113,7 @@ class ProductsModel extends UserModel {
         isFavorite: false);
     _products[_selectedProductIndex] = newProduct;
     _selectedProductIndex = null;
+    // notifyListeners();
   }
 
   bool get isFavoriteSelectedProduct {
@@ -118,9 +133,14 @@ class ProductsModel extends UserModel {
   }
 
   //delete product
-  void deleteProduct() {
+  Future<void> deleteProduct() async {
+    var _productId = _products[_selectedProductIndex].id;
     _products.removeAt(_selectedProductIndex);
     _selectedProductIndex = null;
+    
+    await http.delete('$_baseUrl/products/$_productId.json');
+    
+    // notifyListeners();
   }
 
   void selectProduct(int index) {

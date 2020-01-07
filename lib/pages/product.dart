@@ -36,7 +36,7 @@ class ProductPage extends StatelessWidget {
       // mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Image.network(product.image),
+       FadeInImage(image: NetworkImage(product.image), placeholder: AssetImage('assets/images/dream_home_office.jpeg'),)  ,
         Container(
             padding: EdgeInsets.all(10.0),
             child: Row(

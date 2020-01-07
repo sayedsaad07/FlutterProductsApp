@@ -1,21 +1,48 @@
+import 'package:async_loader/async_loader.dart';
 import 'package:flutter/material.dart';
-import 'package:scoped_model/scoped_model.dart';
 import 'package:starter_app/core/models/product.dart';
 import 'package:starter_app/core/viewmodels/products.dart';
 import 'package:starter_app/pages/product_edit.dart';
-import 'package:starter_app/widgets/products/product_card.dart';
+import 'package:starter_app/widgets/ui_elements/no_connection.dart';
 
-class ProductListPage extends StatelessWidget {
+class ProductListPage extends StatefulWidget {
+  final ProductsModel model;
+  ProductListPage(this.model);
+
+  @override
+  State<StatefulWidget> createState() {
+    return new ProductListPageState();
+  }
+}
+
+class ProductListPageState extends State<ProductListPage> {
+  final GlobalKey<AsyncLoaderState> _asyncLoaderState =
+      new GlobalKey<AsyncLoaderState>();
+
   @override
   Widget build(BuildContext context) {
-    return ScopedModelDescendant<ProductsModel>(
-      builder: (context, child, ProductsModel model) {
-        return ListView.builder(
-          itemBuilder: (BuildContext context, int index) =>
-              _buildProductItem(context, index, model),
-          itemCount: model.allProducts.length,
-        );
-      },
+    var _asyncLoader = new AsyncLoader(
+      key: _asyncLoaderState,
+      initState: () async => await widget.model.fetchProducts(),
+      renderLoad: () => new CircularProgressIndicator(),
+      renderError: ([error]) => new NoConnectionWidget(_asyncLoaderState),
+      renderSuccess: ({data}) => _showProductList(widget.model),
+    );
+
+    // return _buildProductList(widget.model.displayProducts());
+    return RefreshIndicator(
+        onRefresh: () => onHandRefresh(_asyncLoaderState),
+        child: new Center(child: _asyncLoader));
+  }
+
+  Widget _showProductList(ProductsModel model) {
+    return 
+    model.allProducts == null || model.allProducts.length == 0? 
+    new Center(child: Text("No products available to edit."),):
+    ListView.builder(
+      itemBuilder: (BuildContext context, int index) =>
+          _buildProductItem(context, index, model),
+      itemCount: model.allProducts.length,
     );
   }
 
@@ -36,14 +63,18 @@ class ProductListPage extends StatelessWidget {
       ),
     );
     return Dismissible(
-        key: Key(model.allProducts[index].title),
+        key: Key(model.allProducts[index].id),
         background: Container(
           color: Colors.red,
         ),
         onDismissed: (DismissDirection direction) {
           if (direction == DismissDirection.endToStart) {
+            String productTitle = model.allProducts[index].title;
             model.selectProduct(index);
             model.deleteProduct();
+        
+            Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text("$productTitle removed.")));
           }
         },
         child: Column(
@@ -54,7 +85,9 @@ class ProductListPage extends StatelessWidget {
   void _editProduct(context, Product product, index) {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (BuildContext context) {
-      return ProductEditPage(product: product,);
+      return ProductEditPage(
+        product: product,
+      );
     }));
   }
 }

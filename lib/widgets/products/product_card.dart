@@ -16,7 +16,7 @@ class ProductCard extends StatelessWidget {
     return Card(
       child: Column(
         children: <Widget>[
-          Image.network(_product.image),
+          FadeInImage(image: NetworkImage(_product.image), placeholder: AssetImage('assets/images/dream_home_office.jpeg'),)  ,
           Container(
               padding: EdgeInsets.all(10.0),
               child: Row(

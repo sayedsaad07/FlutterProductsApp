@@ -2,6 +2,11 @@
 import 'package:async_loader/async_loader.dart';
 import 'package:flutter/material.dart';
 
+Future<void> onHandRefresh(GlobalKey<AsyncLoaderState> asyncLoaderState) async {
+    await asyncLoaderState.currentState.reloadState();
+    return;
+  }
+
 class NoConnectionWidget extends StatelessWidget {
   final GlobalKey<AsyncLoaderState> _asyncLoaderState;
 
