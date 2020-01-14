@@ -1,6 +1,13 @@
+import 'dart:async';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:starter_app/core/viewmodels/products.dart';
+import 'package:starter_app/widgets/ui_elements/popup-modal.dart';
+import 'package:starter_app/widgets/ui_elements/progress_button.dart';
+
+enum AuthMode { SignUp, LogIn }
 
 class AuthPage extends StatefulWidget {
   @override
@@ -16,6 +23,11 @@ class AuthPageState extends State<AuthPage> {
     'acceptTerms': false
   };
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailTextEditingController =
+      TextEditingController();
+  final TextEditingController _passwordTextEditingController =
+      TextEditingController();
+  AuthMode _authMode = AuthMode.LogIn;
 
   String userName = '';
   String password = '';
@@ -40,59 +52,138 @@ class AuthPageState extends State<AuthPage> {
                 child: SingleChildScrollView(
                     child: Container(
                         width: targetWidth,
-                        padding: EdgeInsets.symmetric(
-                                    horizontal: paddingWidth / 2),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: paddingWidth / 2),
                         child: Form(
                             key: _formKey,
-                            child: Column(
-                                children: <Widget>[
-                                  userName_input(),
-                                  SizedBox(
-                                    height: 10.0,
-                                  ),
-                                  password_input(),
-                                  acceptTerms_switch(),
-                                  login_submit(context)
-                                ]))))),
+                            child: Column(children: <Widget>[
+                              _buildEmailTextField(),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              // _authMode == AuthMode.SignUp? _buildConfirmEmailTextField() : Container(),
+                              // SizedBox(
+                              //   height: 10.0,
+                              // ),
+                              _buildPasswordTextField(),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              _authMode == AuthMode.SignUp
+                                  ? _buildConfirmPasswordTextField()
+                                  : Container(),
+
+                              _buildAcceptTermsSwitch(),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              FlatButton(
+                                child: Text(
+                                    'Switch to ${_authMode == AuthMode.LogIn ? "SignUp" : "Signin"}'),
+                                onPressed: () {
+                                  setState(() {
+                                    _authMode = _authMode == AuthMode.LogIn
+                                        ? AuthMode.SignUp
+                                        : AuthMode.LogIn;
+                                  });
+                                },
+                              ),
+                              _buildSubmitForm(context),
+                              
+                            ]))))),
           ),
         ));
   }
 
-  Widget login_submit(BuildContext context) {
+  Widget _buildSubmitForm(BuildContext context) {
     return ScopedModelDescendant<ProductsModel>(
         builder: (context, child, ProductsModel model) {
-      return RaisedButton(
-        child: Text("Login"),
-        onPressed: () => _submitForm(model.login),
-      );
+          return ProgressButton( buttonText: _authMode == AuthMode.LogIn ? "Login": "Signup",
+          asyncFunctionCall:
+          () async =>await  _submitForm(context, model.login, model.signUp));
+      // return RaisedButton(
+      //   child: Text("Login"),
+      //   onPressed: () => _submitForm(context, model.login, model.signUp),
+      // );
     });
   }
 
-  _submitForm(Function login) {
-       if (!_formKey.currentState.validate()) {
-      return;
+  Future<bool> _submitForm(context, Function login, Function signUp) async {
+    if (!_formKey.currentState.validate()) {
+      return false;
     }
     _formKey.currentState.save();
-    login(_formData['username'] , _formData['password']);
-    Navigator.pushReplacementNamed(context, "/");
+    Map<String, dynamic> result;
+    if (this._authMode == AuthMode.LogIn) {
+      result = await login(_formData['username'], _formData['password']);
+    } else {
+      result = await signUp(_formData['username'], _formData['password']);
+    }
+
+    if (result['success'] == false) {
+      showAlertDialog(context, "Error Message", result['error']);
+      return false;
+    } else {
+      Navigator.pushReplacementNamed(context, "/");
+    }
+
+    return true;
   }
 
-  Widget acceptTerms_switch() {
+  Widget _buildAcceptTermsSwitch() {
     return SwitchListTile(
       title: Text('Accept Terms'),
       value: _acceptTerms,
       onChanged: (bool value) {
-        setState(() => _formData['acceptTerms'] = value);
+        setState(() {
+          _acceptTerms = value;
+          _formData['acceptTerms'] = _acceptTerms;
+        });
       },
     );
   }
 
-  Widget password_input() {
+  Widget _buildEmailTextField() {
+    return TextFormField(
+        decoration: InputDecoration(
+            labelText: 'E-Mail', filled: true, fillColor: Colors.white),
+        keyboardType: TextInputType.emailAddress,
+        controller: _emailTextEditingController,
+        validator: (String value) {
+          if (value.isEmpty ||
+              !RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$")
+                  .hasMatch(value)) {
+            {
+              return "Please enter a valid email.";
+            }
+          }
+        },
+        onSaved: (String value) {
+          _formData['username'] = value;
+        });
+  }
+
+  Widget _buildConfirmEmailTextField() {
+    return TextFormField(
+        decoration: InputDecoration(
+            labelText: 'Confirm E-Mail', filled: true, fillColor: Colors.white),
+        keyboardType: TextInputType.emailAddress,
+        validator: (String value) {
+          if (_emailTextEditingController.text != value) {
+            {
+              return "Email does not match.";
+            }
+          }
+        },
+        onSaved: (String value) {});
+  }
+
+  Widget _buildPasswordTextField() {
     return TextFormField(
         decoration: InputDecoration(
             labelText: 'Password', filled: true, fillColor: Colors.white),
-        initialValue: '',
         obscureText: true,
+        controller: _passwordTextEditingController,
         validator: (String value) {
           if (value.isEmpty) {
             {
@@ -103,21 +194,19 @@ class AuthPageState extends State<AuthPage> {
         onSaved: (String value) => _formData['password'] = value);
   }
 
-  Widget userName_input() {
+  Widget _buildConfirmPasswordTextField() {
     return TextFormField(
         decoration: InputDecoration(
-            labelText: 'User Name', filled: true, fillColor: Colors.white),
-        initialValue: '',
+            labelText: 'Confirm E-Mail', filled: true, fillColor: Colors.white),
+        obscureText: true,
         validator: (String value) {
-          if (value.isEmpty) {
+          if (_passwordTextEditingController.text != value) {
             {
-              return "username is required";
+              return "Password does not match.";
             }
           }
         },
-        onSaved: (String value) {
-          _formData['username'] = value;
-        });
+        onSaved: (String value) {});
   }
 
   BoxDecoration background_image() {

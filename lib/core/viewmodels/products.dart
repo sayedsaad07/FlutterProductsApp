@@ -8,14 +8,103 @@ import 'package:http/http.dart' as http;
 class UserModel extends Model {
   User _authenticatedUser;
   bool _isLoggedin = false;
+  final String _authSigninWithCustomTokenUrl =
+      "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=AIzaSyCgiHsdaf_54T7Go_eXBImBl0m49-XG1hQ";
+  final String _authSignupUrl =
+      "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCgiHsdaf_54T7Go_eXBImBl0m49-XG1hQ";
+  final String _authSigninWithEmailUrl =
+      "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCgiHsdaf_54T7Go_eXBImBl0m49-XG1hQ";
 
   bool get isLoggedin {
     return _authenticatedUser != null;
   }
 
-  void login(String email, String password) {
-    _authenticatedUser =
-        User(email: email, password: password, id: "thisissayedid");
+  Future<Map<String, dynamic>> signUp(String email, String password) async {
+    Map<String, dynamic> authdata = {
+      'email': email,
+      'password': password,
+      'returnSecureToken': true
+    };
+
+    var response = await http.post(_authSignupUrl,
+        body: json.encode(authdata),
+        headers: {'Content-Type': 'application/json'});
+    if (response.body != null) {
+      var responseData = json.decode(response.body);
+
+      if (responseData.containsKey('idToken') == false) {
+        if (responseData['error']['message'] == "EMAIL_EXISTS") {
+          return {
+            'success': false,
+            'error': "The email address is already in use by another account."
+          };
+        } else if (responseData['error']['message'] ==
+            "OPERATION_NOT_ALLOWED") {
+          return {
+            'success': false,
+            'error': "Password sign-in is disabled for this project."
+          };
+        } else if (responseData['error']['message'] ==
+            "TOO_MANY_ATTEMPTS_TRY_LATER") {
+          return {
+            'success': false,
+            'error':
+                "We have blocked all requests from this device due to unusual activity. Try again later."
+          };
+        }
+      }
+      _authenticatedUser = User(
+          email: email,
+          password: password,
+          id: responseData['localId'],
+          idToken: responseData['idToken']);
+      return {'success': true, 'error': ""};
+    }
+    return {'success': false, 'error': "Unable to Signup"};
+  }
+
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    Map<String, dynamic> authdata = {
+      'email': email,
+      'password': password,
+      'returnSecureToken': true
+    };
+
+    var response = await http.post(_authSigninWithEmailUrl,
+        body: json.encode(authdata),
+        headers: {'Content-Type': 'application/json'});
+     if (response.body != null) {
+      var responseData = json.decode(response.body);
+
+      if (responseData.containsKey('idToken') == false) {
+        if (responseData['error']['message'] == "EMAIL_NOT_FOUND") {
+          return {
+            'success': false,
+            'error': "There is no user record corresponding to this identifier. The user may have been deleted."
+          };
+        } else if (responseData['error']['message'] ==
+            "INVALID_PASSWORD") {
+          return {
+            'success': false,
+            'error': "The password is invalid or the user does not have a password."
+          };
+        } else if (responseData['error']['message'] ==
+            "USER_DISABLED") {
+          return {
+            'success': false,
+            'error':
+                "The user account has been disabled by an administrator."
+          };
+        }
+      }
+      _authenticatedUser = User(
+          email: email,
+          password: password,
+          id: responseData['localId'],
+          idToken: responseData['idToken']);
+      return {'success': true, 'error': ""};
+    }
+    return {'success': false, 'error': "Unable to Signup"};
   }
 }
 
@@ -39,7 +128,7 @@ class ProductsModel extends UserModel {
     var response = await http.get('$_baseUrl/products.json');
     Map<String, dynamic> productsListData = json.decode(response.body);
     this._products.clear();
-    
+
     //exit if response body is empty
     if (productsListData == null) return this._products;
 
@@ -70,8 +159,8 @@ class ProductsModel extends UserModel {
       'username': _authenticatedUser.email,
       'userid': _authenticatedUser.id,
     };
-    var response =
-        await http.post('$_baseUrl/products.json', body: json.encode(productData));
+    var response = await http.post('$_baseUrl/products.json',
+        body: json.encode(productData));
     // if(response.statusCode != HttpStatus.notFound){}
     Map<String, dynamic> data = json.decode(response.body);
     final Product newProduct = new Product(
@@ -89,7 +178,8 @@ class ProductsModel extends UserModel {
   }
 
   //update existing product
-  Future<void> updateProduct(String title, String description, String image, double price) async{
+  Future<void> updateProduct(
+      String title, String description, String image, double price) async {
     image = _networkhomeofficeImage;
     Map<String, dynamic> productData = {
       'title': title,
@@ -100,8 +190,9 @@ class ProductsModel extends UserModel {
       'userid': _products[_selectedProductIndex].userid,
     };
     var _productId = _products[_selectedProductIndex].id;
-    
-    await http.put('$_baseUrl/products/$_productId.json', body: json.encode(productData));
+
+    await http.put('$_baseUrl/products/$_productId.json',
+        body: json.encode(productData));
     final Product newProduct = new Product(
         id: _products[_selectedProductIndex].id,
         title: title,
@@ -137,9 +228,9 @@ class ProductsModel extends UserModel {
     var _productId = _products[_selectedProductIndex].id;
     _products.removeAt(_selectedProductIndex);
     _selectedProductIndex = null;
-    
+
     await http.delete('$_baseUrl/products/$_productId.json');
-    
+
     // notifyListeners();
   }
 

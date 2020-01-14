@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:starter_app/core/models/product.dart';
 import 'package:starter_app/core/viewmodels/products.dart';
 import 'package:starter_app/pages/product_edit.dart';
+import 'package:starter_app/widgets/ui_elements/popup-modal.dart';
 import 'package:starter_app/widgets/ui_elements/no_connection.dart';
 
 class ProductListPage extends StatefulWidget {
@@ -36,14 +37,15 @@ class ProductListPageState extends State<ProductListPage> {
   }
 
   Widget _showProductList(ProductsModel model) {
-    return 
-    model.allProducts == null || model.allProducts.length == 0? 
-    new Center(child: Text("No products available to edit."),):
-    ListView.builder(
-      itemBuilder: (BuildContext context, int index) =>
-          _buildProductItem(context, index, model),
-      itemCount: model.allProducts.length,
-    );
+    return model.allProducts == null || model.allProducts.length == 0
+        ? new Center(
+            child: Text("No products available to edit."),
+          )
+        : ListView.builder(
+            itemBuilder: (BuildContext context, int index) =>
+                _buildProductItem(context, index, model),
+            itemCount: model.allProducts.length,
+          );
   }
 
   Widget _buildProductItem(
@@ -72,9 +74,8 @@ class ProductListPageState extends State<ProductListPage> {
             String productTitle = model.allProducts[index].title;
             model.selectProduct(index);
             model.deleteProduct();
-        
-            Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text("$productTitle removed.")));
+
+            showSnackBar(context, "$productTitle removed.");
           }
         },
         child: Column(
