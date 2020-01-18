@@ -27,7 +27,7 @@ class NoConnectionWidget extends StatelessWidget {
           child: new Container(
             decoration: new BoxDecoration(
               image: new DecorationImage(
-                image: new AssetImage('assets/no-wifi.png'),
+                image: new AssetImage('assets/images/no-wifi.png'),
                 fit: BoxFit.contain,
               ),
             ),

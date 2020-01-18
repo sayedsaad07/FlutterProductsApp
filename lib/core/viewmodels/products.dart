@@ -1,22 +1,32 @@
 import 'dart:convert';
 import 'dart:ffi';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:starter_app/core/models/product.dart';
 import 'package:starter_app/core/models/user.dart';
 import 'package:http/http.dart' as http;
+import 'package:starter_app/core/viewmodels/local-settings.dart';
+
+import '../../config.dart';
 
 class UserModel extends Model {
   User _authenticatedUser;
   bool _isLoggedin = false;
   final String _authSigninWithCustomTokenUrl =
-      "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=AIzaSyCgiHsdaf_54T7Go_eXBImBl0m49-XG1hQ";
+      "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?$appKey";
   final String _authSignupUrl =
-      "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCgiHsdaf_54T7Go_eXBImBl0m49-XG1hQ";
+      "https://identitytoolkit.googleapis.com/v1/accounts:signUp?$appKey";
   final String _authSigninWithEmailUrl =
-      "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCgiHsdaf_54T7Go_eXBImBl0m49-XG1hQ";
+      "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?$appKey";
 
   bool get isLoggedin {
     return _authenticatedUser != null;
+  }
+
+  Future<bool> autoAuthenticateUser() async {
+    _authenticatedUser = await getAuthenticatedUserInfo();
+    if (_authenticatedUser == null) return false;
+    return true;
   }
 
   Future<Map<String, dynamic>> signUp(String email, String password) async {
@@ -55,9 +65,10 @@ class UserModel extends Model {
       }
       _authenticatedUser = User(
           email: email,
-          password: password,
           id: responseData['localId'],
           idToken: responseData['idToken']);
+      await setAuthenticatedUserInfo(_authenticatedUser.id,
+          _authenticatedUser.email, _authenticatedUser.idToken);
       return {'success': true, 'error': ""};
     }
     return {'success': false, 'error': "Unable to Signup"};
@@ -73,35 +84,36 @@ class UserModel extends Model {
     var response = await http.post(_authSigninWithEmailUrl,
         body: json.encode(authdata),
         headers: {'Content-Type': 'application/json'});
-     if (response.body != null) {
+    if (response.body != null) {
       var responseData = json.decode(response.body);
 
       if (responseData.containsKey('idToken') == false) {
         if (responseData['error']['message'] == "EMAIL_NOT_FOUND") {
           return {
             'success': false,
-            'error': "There is no user record corresponding to this identifier. The user may have been deleted."
+            'error':
+                "There is no user record corresponding to this identifier. The user may have been deleted."
           };
-        } else if (responseData['error']['message'] ==
-            "INVALID_PASSWORD") {
-          return {
-            'success': false,
-            'error': "The password is invalid or the user does not have a password."
-          };
-        } else if (responseData['error']['message'] ==
-            "USER_DISABLED") {
+        } else if (responseData['error']['message'] == "INVALID_PASSWORD") {
           return {
             'success': false,
             'error':
-                "The user account has been disabled by an administrator."
+                "The password is invalid or the user does not have a password."
+          };
+        } else if (responseData['error']['message'] == "USER_DISABLED") {
+          return {
+            'success': false,
+            'error': "The user account has been disabled by an administrator."
           };
         }
       }
       _authenticatedUser = User(
           email: email,
-          password: password,
           id: responseData['localId'],
           idToken: responseData['idToken']);
+      
+      await setAuthenticatedUserInfo(_authenticatedUser.id,
+          _authenticatedUser.email, _authenticatedUser.idToken);
       return {'success': true, 'error': ""};
     }
     return {'success': false, 'error': "Unable to Signup"};
@@ -125,7 +137,8 @@ class ProductsModel extends UserModel {
   }
 
   Future<List<Product>> fetchProducts() async {
-    var response = await http.get('$_baseUrl/products.json');
+    var response = await http
+        .get('$_baseUrl/products.json?auth=${_authenticatedUser.idToken}');
     Map<String, dynamic> productsListData = json.decode(response.body);
     this._products.clear();
 
@@ -159,7 +172,8 @@ class ProductsModel extends UserModel {
       'username': _authenticatedUser.email,
       'userid': _authenticatedUser.id,
     };
-    var response = await http.post('$_baseUrl/products.json',
+    var response = await http.post(
+        '$_baseUrl/products.json?auth=${_authenticatedUser.idToken}',
         body: json.encode(productData));
     // if(response.statusCode != HttpStatus.notFound){}
     Map<String, dynamic> data = json.decode(response.body);
@@ -191,7 +205,8 @@ class ProductsModel extends UserModel {
     };
     var _productId = _products[_selectedProductIndex].id;
 
-    await http.put('$_baseUrl/products/$_productId.json',
+    await http.put(
+        '$_baseUrl/products/$_productId.json?auth=${_authenticatedUser.idToken}',
         body: json.encode(productData));
     final Product newProduct = new Product(
         id: _products[_selectedProductIndex].id,
@@ -229,7 +244,8 @@ class ProductsModel extends UserModel {
     _products.removeAt(_selectedProductIndex);
     _selectedProductIndex = null;
 
-    await http.delete('$_baseUrl/products/$_productId.json');
+    await http.delete(
+        '$_baseUrl/products/$_productId.json?auth=${_authenticatedUser.idToken}');
 
     // notifyListeners();
   }

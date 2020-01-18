@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class ProgressButton extends StatefulWidget {
   final Function asyncFunctionCall;
   final String buttonText;
-  ProgressButton({@required this.buttonText , @required this.asyncFunctionCall});
+  ProgressButton({@required this.buttonText, @required this.asyncFunctionCall});
 
   @override
   State<StatefulWidget> createState() {
@@ -20,11 +20,7 @@ class ProgressButtonState extends State<ProgressButton>
   GlobalKey _globalKey = new GlobalKey();
   Animation _animation;
   AnimationController _controller;
-
-  _resetState() {
-    _state = 0;
-    _width = double.infinity;
-  }
+  double initialWidth = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +28,9 @@ class ProgressButtonState extends State<ProgressButton>
       key: _globalKey,
       child: setUpButtonChild(),
       onPressed: () {
+        initialWidth = initialWidth == 0.0
+            ? _globalKey.currentContext.size.width
+            : initialWidth;
         setState(() {
           if (_state == 0) {
             animateButton();
@@ -41,10 +40,10 @@ class ProgressButtonState extends State<ProgressButton>
       elevation: 4.0,
       minWidth: _width,
       height: 48.0,
-      color: Colors.lightGreen,
+      color: Colors.lightBlue,
     );
     return new PhysicalModel(
-      color: Colors.lightGreen,
+      color: Colors.lightBlue,
       borderRadius: BorderRadius.circular(25.0),
       child: materialButton,
     );
@@ -68,34 +67,32 @@ class ProgressButtonState extends State<ProgressButton>
     }
   }
 
-  Future<void> animateButton() async {
-    double initialWidth = _globalKey.currentContext.size.width;
-    _controller =
-        AnimationController(duration: Duration(milliseconds: 300), vsync: this);
-    _animation = Tween(begin: 0.0, end: 1.0).animate(_controller);
+  _animateButtonWidth(double start, double end) {
+    _animation = Tween(begin: start, end: end).animate(_controller);
     _animation.addListener(() {
       setState(() {
         _width = initialWidth - ((initialWidth - 48.0) * _animation.value);
       });
     });
     _controller.forward();
+  }
 
+  Future<void> animateButton() async {
+    _controller =
+        AnimationController(duration: Duration(milliseconds: 300), vsync: this);
+    _animateButtonWidth(0.0, 1.0);
     setState(() {
       _state = 1;
     });
 
-    // Timer(Duration(milliseconds: 3300), () {
-    //   setState(() {
-    //     _state = 2;
-    //   });
-    // });
-
     bool result = await widget.asyncFunctionCall();
     setState(() {
-      if (result == false)
-       {_resetState();}
-      else
-        {_state = 2;}
+      if (result == false) {
+        _state = 0;
+        _animateButtonWidth(1.0, 0.0);
+      } else {
+        _state = 2;
+      }
     });
   }
 }

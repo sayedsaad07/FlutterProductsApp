@@ -25,6 +25,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
   @override
   Widget build(BuildContext context) {
     var materialApp = MaterialApp(
@@ -34,13 +35,14 @@ class _MyAppState extends State<MyApp> {
             brightness: Brightness.light,
             buttonColor: Colors.deepPurple),
         // home: AuthPage(), //because we have a default route "/"
-        initialRoute: '/auth',
+        initialRoute: '/',
         onGenerateRoute: (RouteSettings settings) {
           switch (settings.name) {
             case '/':
-              return MaterialPageRoute(builder: (_) => ProductsPage());
             case '/auth':
               return MaterialPageRoute(builder: (_) => AuthPage());
+            case '/home':
+              return MaterialPageRoute(builder: (_) => ProductsPage());
             case '/admin':
               return MaterialPageRoute(builder: (_) => ProductsAdminPage());
             case '/product':
@@ -59,9 +61,7 @@ class _MyAppState extends State<MyApp> {
           }
         });
     return ScopedModel<ProductsModel>(
-        model: ProductsModel(),
-        child: ScopedModel<UserModel>(
-            model: UserModel(), 
-            child: materialApp));
+        model: new ProductsModel(),
+        child: ScopedModel<UserModel>(model: UserModel(), child: materialApp));
   }
 }

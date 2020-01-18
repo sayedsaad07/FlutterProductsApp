@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:starter_app/core/viewmodels/products.dart';
@@ -29,9 +27,8 @@ class AuthPageState extends State<AuthPage> {
       TextEditingController();
   AuthMode _authMode = AuthMode.LogIn;
 
-  String userName = '';
-  String password = '';
   bool _acceptTerms = false;
+
   @override
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
@@ -89,7 +86,6 @@ class AuthPageState extends State<AuthPage> {
                                 },
                               ),
                               _buildSubmitForm(context),
-                              
                             ]))))),
           ),
         ));
@@ -98,9 +94,10 @@ class AuthPageState extends State<AuthPage> {
   Widget _buildSubmitForm(BuildContext context) {
     return ScopedModelDescendant<ProductsModel>(
         builder: (context, child, ProductsModel model) {
-          return ProgressButton( buttonText: _authMode == AuthMode.LogIn ? "Login": "Signup",
-          asyncFunctionCall:
-          () async =>await  _submitForm(context, model.login, model.signUp));
+      return ProgressButton(
+          buttonText: _authMode == AuthMode.LogIn ? "Login" : "Signup",
+          asyncFunctionCall: () async => await _submitForm(
+              context, model.login, model.signUp, model.autoAuthenticateUser));
       // return RaisedButton(
       //   child: Text("Login"),
       //   onPressed: () => _submitForm(context, model.login, model.signUp),
@@ -108,7 +105,13 @@ class AuthPageState extends State<AuthPage> {
     });
   }
 
-  Future<bool> _submitForm(context, Function login, Function signUp) async {
+  Future<bool> _submitForm(context, Function login, Function signUp,
+      Function autoAuthenticateUser) async {
+    var isAuth = await autoAuthenticateUser();
+    if (isAuth == true) {
+      Navigator.pushReplacementNamed(context, "/home");
+      return true;
+    }
     if (!_formKey.currentState.validate()) {
       return false;
     }
@@ -124,7 +127,7 @@ class AuthPageState extends State<AuthPage> {
       showAlertDialog(context, "Error Message", result['error']);
       return false;
     } else {
-      Navigator.pushReplacementNamed(context, "/");
+      Navigator.pushReplacementNamed(context, "/home");
     }
 
     return true;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:starter_app/core/viewmodels/local-settings.dart';
 import 'package:starter_app/core/viewmodels/products.dart';
+import 'package:starter_app/widgets/auth.dart';
 import 'package:starter_app/widgets/products/products.dart';
 
 class ProductsPage extends StatelessWidget {
@@ -21,13 +23,7 @@ class ProductsPage extends StatelessWidget {
                   Navigator.pushReplacementNamed(context, "/admin");
                 },
               ),
-              ListTile(
-                leading: Icon(Icons.lock_open),
-                title: Text("login"),
-                onTap: () {
-                  Navigator.pushReplacementNamed(context, "/auth");
-                },
-              )
+              logoutTile(context)
             ],
           ),
         ),

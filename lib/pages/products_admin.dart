@@ -21,7 +21,7 @@ class ProductsAdminPage extends StatelessWidget {
                   leading: Icon(Icons.shop),
                   title: Text("Allo Products"),
                   onTap: () {
-                    Navigator.pushReplacementNamed(context, "/");
+                    Navigator.pushReplacementNamed(context, "/home");
                   },
                 )
               ],

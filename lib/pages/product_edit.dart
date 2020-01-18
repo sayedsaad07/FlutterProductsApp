@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:starter_app/core/models/product.dart';
 import 'package:starter_app/core/viewmodels/products.dart';
+import 'package:starter_app/widgets/ui_elements/progress_button.dart';
 
 class ProductEditPage extends StatefulWidget {
   final Product product;
@@ -105,28 +106,22 @@ class _ProductEditPageState extends State<ProductEditPage> {
     );
   }
 
-  void _submitProduct(Function addProduct, Function updateProduct , Function selectProduct) {
+  Future<void> _submitProduct(Function addProduct, Function updateProduct,
+      Function selectProduct) async {
     if (!_formKey.currentState.validate()) {
       return;
     }
     _formKey.currentState.save();
     if (widget.product == null) {
       //Add new product
-      addProduct(
-           _formProduct['title'],
-           _formProduct['description'],
-           _formProduct['image'],
-           _formProduct['price']
-           );
+      await addProduct(_formProduct['title'], _formProduct['description'],
+          _formProduct['image'], _formProduct['price']);
     } else {
       //update existing product
-      updateProduct(
-         _formProduct['title'],
-         _formProduct['description'],
-         _formProduct['image'],
-         _formProduct['price']);
+      await updateProduct(_formProduct['title'], _formProduct['description'],
+          _formProduct['image'], _formProduct['price']);
     }
-    Navigator.pushNamed(context, "/").then((_) => selectProduct(null));
+    Navigator.pushReplacementNamed(context, "/home").then((_) => selectProduct(null));
   }
 
   // void _showModal(BuildContext context) {
@@ -139,14 +134,21 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   Widget _buildSubmitButton() {
     return ScopedModelDescendant<ProductsModel>(
-      builder: (BuildContext context, Widget child, ProductsModel model) {
-        return RaisedButton(
-          child: Text("Save"),
-          color: Colors.white,
-          onPressed: () =>
-              _submitProduct(model.addProduct, model.updateProduct, model.selectProduct)
-        );
-      },
-    );
+        builder: (context, child, ProductsModel model) {
+      return ProgressButton(
+          buttonText: "Save",
+          asyncFunctionCall: () async => await _submitProduct(
+              model.addProduct, model.updateProduct, model.selectProduct));
+    });
+    // return ScopedModelDescendant<ProductsModel>(
+    //   builder: (BuildContext context, Widget child, ProductsModel model) {
+    //     return RaisedButton(
+    //       child: Text("Save"),
+    //       color: Colors.white,
+    //       onPressed: () =>
+    //           _submitProduct(model.addProduct, model.updateProduct, model.selectProduct)
+    //     );
+    //   },
+    // );
   }
 }

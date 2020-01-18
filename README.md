@@ -70,3 +70,4 @@ shared_preferences: Save data on local device
 
 map_view
 location
+

@@ -26,7 +26,8 @@ dependencies:
   scoped_model: ^1.0.1
   http: ^0.12.0+2
   async_loader: ^0.1.2
-      
+  shared_preferences: ^0.5.6
+    
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -50,6 +51,7 @@ flutter:
    - assets/images/profile.png
    - assets/images/background.jpg
    - assets/Roboto-Bold.ttf
+   - assets/images/no-wifi.png  
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
