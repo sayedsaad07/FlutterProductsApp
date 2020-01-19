@@ -111,7 +111,7 @@ class UserModel extends Model {
           email: email,
           id: responseData['localId'],
           idToken: responseData['idToken']);
-      
+
       await setAuthenticatedUserInfo(_authenticatedUser.id,
           _authenticatedUser.email, _authenticatedUser.idToken);
       return {'success': true, 'error': ""};
@@ -247,12 +247,20 @@ class ProductsModel extends UserModel {
     await http.delete(
         '$_baseUrl/products/$_productId.json?auth=${_authenticatedUser.idToken}');
 
-    // notifyListeners();
+    notifyListeners();
   }
 
   void selectProduct(int index) {
     _selectedProductIndex = index;
     this.notifyListeners();
+  }
+
+  bool canEditProduct(int index) {
+    _selectedProductIndex = index;
+    if (this.allProducts[index].userid == _authenticatedUser.id) {
+      return true;
+    }
+    return false;
   }
 
   void toggleProductFavorite(int productIndex) {

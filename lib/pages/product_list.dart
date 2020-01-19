@@ -60,6 +60,10 @@ class ProductListPageState extends State<ProductListPage> {
         icon: Icon(Icons.edit),
         onPressed: () {
           model.selectProduct(index);
+          if (model.canEditProduct(index) == false) {
+            showSnackBar(context, "User is not authorized.");
+            return;
+          }
           _editProduct(context, model.allProducts[index], index);
         },
       ),
@@ -70,12 +74,15 @@ class ProductListPageState extends State<ProductListPage> {
           color: Colors.red,
         ),
         onDismissed: (DismissDirection direction) {
-          if (direction == DismissDirection.endToStart) {
-            String productTitle = model.allProducts[index].title;
+          if (direction == DismissDirection.endToStart &&
+              model.canEditProduct(index) == true) {
             model.selectProduct(index);
+            String productTitle = model.allProducts[index].title;
             model.deleteProduct();
-
             showSnackBar(context, "$productTitle removed.");
+          }
+          if (model.canEditProduct(index) == false) {
+            showSnackBar(context, "User is not authorized.");
           }
         },
         child: Column(
