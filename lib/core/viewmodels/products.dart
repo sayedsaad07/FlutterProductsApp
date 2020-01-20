@@ -1,17 +1,17 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:starter_app/core/models/common-constants.dart';
 import 'package:starter_app/core/models/product.dart';
 import 'package:starter_app/core/models/user.dart';
 import 'package:http/http.dart' as http;
 import 'package:starter_app/core/viewmodels/local-settings.dart';
+import 'package:starter_app/core/viewmodels/user-products.dart';
 
 import '../../config.dart';
 
 class UserModel extends Model {
   User _authenticatedUser;
-  bool _isLoggedin = false;
+
   final String _authSigninWithCustomTokenUrl =
       "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?$appKey";
   final String _authSignupUrl =
@@ -121,13 +121,10 @@ class UserModel extends Model {
 }
 
 class ProductsModel extends UserModel {
-  String _baseUrl = "https://connectutopia.firebaseio.com";
-  var _networkhomeofficeImage =
-      "https://tr1.cbsistatic.com/hub/i/2017/11/22/42deea0f-4f4b-44c6-a2dc-c855499ea92e/unlikely4.jpg";
   bool _displayFavoriteOnly = false;
   List<Product> _products = [];
   int _selectedProductIndex;
-
+  UserProducts _userProducts;
   List<Product> get allProducts {
     return List.from(_products);
   }
@@ -136,14 +133,19 @@ class ProductsModel extends UserModel {
     return _selectedProductIndex;
   }
 
+  ProductsModel() {
+    _userProducts = new UserProducts();
+  }
   Future<List<Product>> fetchProducts() async {
     var response = await http
-        .get('$_baseUrl/products.json?auth=${_authenticatedUser.idToken}');
+        .get('$baseUrl/products.json?auth=${_authenticatedUser.idToken}');
     Map<String, dynamic> productsListData = json.decode(response.body);
     this._products.clear();
 
     //exit if response body is empty
     if (productsListData == null) return this._products;
+    var _productIds = await _userProducts.getLikedProducts(
+        _authenticatedUser.id, _authenticatedUser.idToken);
 
     productsListData.forEach((String productId, dynamic productData) {
       Product newProduct = new Product(
@@ -153,7 +155,10 @@ class ProductsModel extends UserModel {
           image: productData['image'],
           price: productData['price'],
           userid: productData['userid'],
-          username: productData['username']);
+          username: productData['username'],
+          isFavorite: _productIds != null && _productIds.length > 0  && _productIds.any((String id) => id == productId)  ? true : false
+          );
+
       this._products.add(newProduct);
     });
     notifyListeners();
@@ -163,7 +168,7 @@ class ProductsModel extends UserModel {
   //add new product
   Future<void> addProduct(
       String title, String description, String image, double price) async {
-    image = _networkhomeofficeImage;
+    image = networkhomeofficeImage;
     Map<String, dynamic> productData = {
       'title': title,
       'description': description,
@@ -173,7 +178,7 @@ class ProductsModel extends UserModel {
       'userid': _authenticatedUser.id,
     };
     var response = await http.post(
-        '$_baseUrl/products.json?auth=${_authenticatedUser.idToken}',
+        '$baseUrl/products.json?auth=${_authenticatedUser.idToken}',
         body: json.encode(productData));
     // if(response.statusCode != HttpStatus.notFound){}
     Map<String, dynamic> data = json.decode(response.body);
@@ -194,19 +199,19 @@ class ProductsModel extends UserModel {
   //update existing product
   Future<void> updateProduct(
       String title, String description, String image, double price) async {
-    image = _networkhomeofficeImage;
+    image = networkhomeofficeImage;
     Map<String, dynamic> productData = {
       'title': title,
       'description': description,
       'price': price,
       'image': image,
       'username': _products[_selectedProductIndex].username,
-      'userid': _products[_selectedProductIndex].userid,
+      'userid': _products[_selectedProductIndex].userid
     };
     var _productId = _products[_selectedProductIndex].id;
 
     await http.put(
-        '$_baseUrl/products/$_productId.json?auth=${_authenticatedUser.idToken}',
+        '$baseUrl/products/$_productId.json?auth=${_authenticatedUser.idToken}',
         body: json.encode(productData));
     final Product newProduct = new Product(
         id: _products[_selectedProductIndex].id,
@@ -216,7 +221,7 @@ class ProductsModel extends UserModel {
         image: image,
         username: _products[_selectedProductIndex].username,
         userid: _products[_selectedProductIndex].userid,
-        isFavorite: false);
+        isFavorite: _products[_selectedProductIndex].isFavorite);
     _products[_selectedProductIndex] = newProduct;
     _selectedProductIndex = null;
     // notifyListeners();
@@ -245,7 +250,7 @@ class ProductsModel extends UserModel {
     _selectedProductIndex = null;
 
     await http.delete(
-        '$_baseUrl/products/$_productId.json?auth=${_authenticatedUser.idToken}');
+        '$baseUrl/products/$_productId.json?auth=${_authenticatedUser.idToken}');
 
     notifyListeners();
   }
@@ -263,7 +268,7 @@ class ProductsModel extends UserModel {
     return false;
   }
 
-  void toggleProductFavorite(int productIndex) {
+  Future<void> toggleProductFavorite(int productIndex) async {
     int actualindex = _getProductIndex(productIndex);
     _selectedProductIndex = actualindex;
     if (_selectedProductIndex != null) {
@@ -280,6 +285,15 @@ class ProductsModel extends UserModel {
           userid: _products[_selectedProductIndex].userid,
           isFavorite: newFavoriteStatus);
       _products[_selectedProductIndex] = newProduct;
+      if (newFavoriteStatus == false) {
+        await _userProducts.removelikeProduct(
+            _products[_selectedProductIndex].id,
+            _authenticatedUser.id,
+            _authenticatedUser.idToken);
+      } else {
+        await _userProducts.addlikeProduct(_products[_selectedProductIndex].id,
+            _authenticatedUser.id, _authenticatedUser.idToken);
+      }
       _selectedProductIndex = null;
       this.notifyListeners();
     }
