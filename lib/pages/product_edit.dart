@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:starter_app/core/models/product.dart';
 import 'package:starter_app/core/viewmodels/products.dart';
+import 'package:starter_app/widgets/form-inputs/image.dart';
 import 'package:starter_app/widgets/ui_elements/progress_button.dart';
 
 class ProductEditPage extends StatefulWidget {
@@ -38,6 +39,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   _buildTitleTextFormField(),
                   _buildDescriptionTextFormField(),
                   _buildPriceTextFormField(),
+                  SizedBox(
+                    width: 10.0,
+                  ),
+                  ImageInput(),
                   _buildSubmitButton()
                 ])));
 
@@ -121,7 +126,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
       await updateProduct(_formProduct['title'], _formProduct['description'],
           _formProduct['image'], _formProduct['price']);
     }
-    Navigator.pushReplacementNamed(context, "/home").then((_) => selectProduct(null));
+    Navigator.pushReplacementNamed(context, "/home")
+        .then((_) => selectProduct(null));
   }
 
   // void _showModal(BuildContext context) {

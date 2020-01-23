@@ -24,6 +24,7 @@ class ProgressButtonState extends State<ProgressButton>
 
   @override
   Widget build(BuildContext context) {
+    final Color _buttonColor = Theme.of(context).accentColor;
     Widget materialButton = new MaterialButton(
       key: _globalKey,
       child: setUpButtonChild(),
@@ -40,10 +41,10 @@ class ProgressButtonState extends State<ProgressButton>
       elevation: 4.0,
       minWidth: _width,
       height: 48.0,
-      color: Colors.lightBlue,
+      color: _buttonColor,
     );
     return new PhysicalModel(
-      color: Colors.lightBlue,
+      color: _buttonColor,
       borderRadius: BorderRadius.circular(25.0),
       child: materialButton,
     );

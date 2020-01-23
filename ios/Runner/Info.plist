@@ -26,6 +26,12 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Image is used as a product image</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take your product Image</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Select product imag from your gallerye</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
