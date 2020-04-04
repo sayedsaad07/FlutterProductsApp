@@ -71,3 +71,16 @@ shared_preferences: Save data on local device
 map_view
 location
 
+
+
+Upload image 
+https://fireship.io/lessons/flutter-file-uploads-cloud-storage/
+
+image resizing
+https://fireship.io/lessons/flutter-file-uploads-cloud-storage/
+
+
+
+
+
+
