@@ -79,6 +79,7 @@ https://fireship.io/lessons/flutter-file-uploads-cloud-storage/
 image resizing
 https://fireship.io/lessons/flutter-file-uploads-cloud-storage/
 
+Add Google functions support
 
 
 
